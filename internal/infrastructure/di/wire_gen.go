@@ -19,7 +19,7 @@ func InitializeApp() (*http.Server, error) {
 	product := repository.NewProductInMemory()
 	productFinderAll := usecase.NewProductFinderAll(product)
 	productFinderByID := usecase.NewProductFinderByID(product)
-	productAPI := handler.NewProductAPI(productFinderAll, productFinderByID)
-	server := http.NewServer(productAPI)
+	productHandler := handler.NewProductAPI(productFinderAll, productFinderByID)
+	server := http.NewServer(productHandler)
 	return server, nil
 }
