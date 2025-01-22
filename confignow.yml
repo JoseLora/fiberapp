@@ -1,0 +1,21 @@
+amiga:
+  common:
+    cache:
+      redis:
+        enabled: true
+        host: hostconfignow
+        port: 10000
+        cache-names:
+          - cache3
+          - cache4
+          - cache5
+        per-cache-conf:
+          cache1:
+            timeout: 1111
+          cache2:
+            timeout: 2000
+app:
+  key1: value11
+  list1:
+    - value1
+    - value3

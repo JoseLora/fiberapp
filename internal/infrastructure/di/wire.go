@@ -4,6 +4,7 @@
 package di
 
 import (
+	amiga "github.com/JoseLora/fiberapp/internal/amiga/config"
 	"github.com/JoseLora/fiberapp/internal/api/handler"
 	"github.com/JoseLora/fiberapp/internal/application/usecase"
 	"github.com/JoseLora/fiberapp/internal/infrastructure/repository"
@@ -13,6 +14,7 @@ import (
 
 func InitializeApp() (*http.Server, error) {
 	wire.Build(
+		amiga.NewConfig,
 		repository.NewProductInMemory,
 		handler.NewProductAPI,
 		usecase.NewProductFinderAll,

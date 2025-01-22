@@ -7,6 +7,7 @@
 package di
 
 import (
+	"github.com/JoseLora/fiberapp/internal/amiga/config"
 	"github.com/JoseLora/fiberapp/internal/api/handler"
 	"github.com/JoseLora/fiberapp/internal/application/usecase"
 	"github.com/JoseLora/fiberapp/internal/infrastructure/repository"
@@ -17,7 +18,11 @@ import (
 
 func InitializeApp() (*http.Server, error) {
 	product := repository.NewProductInMemory()
-	productFinderAll := usecase.NewProductFinderAll(product)
+	config, err := amiga.NewConfig()
+	if err != nil {
+		return nil, err
+	}
+	productFinderAll := usecase.NewProductFinderAll(product, config)
 	productFinderByID := usecase.NewProductFinderByID(product)
 	productHandler := handler.NewProductAPI(productFinderAll, productFinderByID)
 	server := http.NewServer(productHandler)
