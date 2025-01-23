@@ -8,12 +8,14 @@ import (
 	"github.com/JoseLora/fiberapp/internal/api/handler"
 	"github.com/JoseLora/fiberapp/internal/application/usecase"
 	"github.com/JoseLora/fiberapp/internal/infrastructure/repository"
+	"github.com/JoseLora/fiberapp/internal/infrastructure/server/eventbus"
 	"github.com/JoseLora/fiberapp/internal/infrastructure/server/http"
 	"github.com/google/wire"
 )
 
 func InitializeApp() (*http.Server, error) {
 	wire.Build(
+		eventbus.NewEventBus,
 		amiga.NewConfig,
 		repository.NewProductInMemory,
 		handler.NewProductAPI,

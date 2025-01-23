@@ -5,6 +5,7 @@ go 1.23.3
 require github.com/gofiber/fiber/v2 v2.52.6
 
 require (
+	github.com/asaskevich/EventBus v0.0.0-20200907212545-49d423059eef // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/knadh/koanf/maps v0.1.1 // indirect

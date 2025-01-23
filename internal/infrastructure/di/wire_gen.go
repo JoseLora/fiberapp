@@ -11,6 +11,7 @@ import (
 	"github.com/JoseLora/fiberapp/internal/api/handler"
 	"github.com/JoseLora/fiberapp/internal/application/usecase"
 	"github.com/JoseLora/fiberapp/internal/infrastructure/repository"
+	"github.com/JoseLora/fiberapp/internal/infrastructure/server/eventbus"
 	"github.com/JoseLora/fiberapp/internal/infrastructure/server/http"
 )
 
@@ -18,11 +19,12 @@ import (
 
 func InitializeApp() (*http.Server, error) {
 	product := repository.NewProductInMemory()
-	config, err := amiga.NewConfig()
+	bus := eventbus.NewEventBus()
+	config, err := amiga.NewConfig(bus)
 	if err != nil {
 		return nil, err
 	}
-	productFinderAll := usecase.NewProductFinderAll(product, config)
+	productFinderAll := usecase.NewProductFinderAll(product, config, bus)
 	productFinderByID := usecase.NewProductFinderByID(product)
 	productHandler := handler.NewProductAPI(productFinderAll, productFinderByID)
 	server := http.NewServer(productHandler)

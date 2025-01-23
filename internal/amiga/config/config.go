@@ -5,6 +5,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/asaskevich/EventBus"
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/env"
 	"github.com/knadh/koanf/providers/file"
@@ -44,15 +45,19 @@ type ConfStruct interface {
 // Internal implementation of Config interface using Koanf library
 type defaultConfig struct {
 	koanf             *koanf.Koanf
+	eventBus          EventBus.Bus
 	boundStructs      []*ConfStruct
 	watcherRegistered bool
 }
 
+// Struct that maps all Amiga Fwk properties (TODO extract from here to Amiga core instance?)
 var amigaConfig = &AmigaConfStruct{}
 
-func NewConfig() (Config, error) {
+func NewConfig(eventBus EventBus.Bus) (Config, error) {
 
-	c := &defaultConfig{}
+	c := &defaultConfig{
+		eventBus: eventBus,
+	}
 
 	err := c.reloadConfig()
 
@@ -106,7 +111,7 @@ func (c *defaultConfig) reloadConfig() error {
 					log.Printf("error watching configmap from ConfigNow: %s", err)
 					return
 				}
-				onConfigNowReload(c)
+				c.onConfigNowReload()
 			})
 			c.watcherRegistered = true
 		}
@@ -118,8 +123,11 @@ func (c *defaultConfig) reloadConfig() error {
 }
 
 // Called when the configmap from ConfigNow is reloaded and the change is detected by the Koanf file watcher
-func onConfigNowReload(c *defaultConfig) {
+func (c *defaultConfig) onConfigNowReload() {
 	log.Println("ConfigNow has been reloaded")
+
+	// TODO the second parameter should be documented as AmigaEvent struct or interface TBD, although the call is made by reflection and here there is no type checking
+	c.eventBus.Publish("confignow.refresh", "Event string")
 
 	err := c.reloadConfig()
 
@@ -132,7 +140,6 @@ func onConfigNowReload(c *defaultConfig) {
 	if err != nil {
 		log.Printf("error rebinding config: %s", err)
 	}
-
 }
 
 func (c *defaultConfig) String(key string) (string, error) {
@@ -221,7 +228,7 @@ func (c *defaultConfig) rebind() error {
 	return nil
 }
 
-// AmigaConfig is the struct that maps all Amiga Fwk properties (TODO extract from here to Amiga core instance)
+// AmigaConfig is the struct that maps all Amiga Fwk properties (TODO extract from here to Amiga core instance?)
 type AmigaConfStruct struct {
 	Amiga struct {
 		Common struct {
