@@ -33,7 +33,7 @@ type Config interface {
 	// Binds a struct to be automatically filled with configuration values and internally registered to be hot-reloaded on config-now file refresh
 	Bind(c AmigaConfig) error
 
-	// Return a ConfStruct with all the Amiga Fwk properties already bound to be hot-reloaded
+	// Return an AmigaConfig with all the Amiga Fwk properties already bound to be hot-reloaded
 	AmigaFwkConfig() *AmigaFwkConfig
 }
 
