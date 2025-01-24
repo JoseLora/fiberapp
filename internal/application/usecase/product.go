@@ -51,7 +51,7 @@ func NewProductFinderAll(repository repository.Product, amigaConfig amiga.Config
 // FindAll retrieves all products from the repository.
 // It takes a context as a parameter and returns a slice of products and an error.
 func (p *ProductFinderAll) FindAll(ctx context.Context) ([]entity.Product, error) {
-	conf := p.amigaConfig.AmigaConfigProps()
+	conf := p.amigaConfig.AmigaFwkConfig()
 	log.Println("---- AmigaConfig bound struct ----")
 	log.Println(conf.Amiga.Common.Cache.Redis.Enabled)
 	log.Println(conf.Amiga.Common.Cache.Redis.Host)

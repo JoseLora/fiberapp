@@ -31,14 +31,14 @@ type Config interface {
 	Float64s(key string) ([]float64, error)
 
 	// Binds a struct to be automatically filled with configuration values and internally registered to be hot-reloaded on config-now file refresh
-	Bind(c ConfStruct) error
+	Bind(c AmigaConfig) error
 
 	// Return a ConfStruct with all the Amiga Fwk properties already bound to be hot-reloaded
-	AmigaConfigProps() *AmigaConfStruct
+	AmigaFwkConfig() *AmigaFwkConfig
 }
 
 // All structs that want to be automatically filled with configuration values must implement this interface
-type ConfStruct interface {
+type AmigaConfig interface {
 	Prefix() string
 }
 
@@ -46,12 +46,12 @@ type ConfStruct interface {
 type defaultConfig struct {
 	koanf             *koanf.Koanf
 	eventBus          EventBus.Bus
-	boundStructs      []*ConfStruct
+	boundStructs      []*AmigaConfig
 	watcherRegistered bool
 }
 
 // Struct that maps all Amiga Fwk properties (TODO extract from here to Amiga core instance?)
-var amigaConfig = &AmigaConfStruct{}
+var amigaFwkConfig = &AmigaFwkConfig{}
 
 func NewConfig(eventBus EventBus.Bus) (Config, error) {
 
@@ -65,7 +65,7 @@ func NewConfig(eventBus EventBus.Bus) (Config, error) {
 		return nil, fmt.Errorf("error loading config: %w", err)
 	}
 
-	c.Bind(amigaConfig)
+	c.Bind(amigaFwkConfig)
 
 	return c, nil
 }
@@ -198,7 +198,7 @@ func (c *defaultConfig) Float64s(key string) ([]float64, error) {
 	return c.koanf.Float64s(key), nil
 }
 
-func (c *defaultConfig) Bind(conf ConfStruct) error {
+func (c *defaultConfig) Bind(conf AmigaConfig) error {
 	if err := unMarshal(conf, c.koanf); err != nil {
 		return fmt.Errorf("error binding struct: %w", err)
 	}
@@ -206,12 +206,12 @@ func (c *defaultConfig) Bind(conf ConfStruct) error {
 	return nil
 }
 
-func unMarshal(conf ConfStruct, k *koanf.Koanf) error {
+func unMarshal(conf AmigaConfig, k *koanf.Koanf) error {
 	return k.UnmarshalWithConf(conf.Prefix(), conf, koanf.UnmarshalConf{Tag: "yaml"})
 }
 
-func (c *defaultConfig) AmigaConfigProps() *AmigaConfStruct {
-	return amigaConfig
+func (c *defaultConfig) AmigaFwkConfig() *AmigaFwkConfig {
+	return amigaFwkConfig
 }
 
 // Rebind all structs that have been bound to the configuration
@@ -228,8 +228,8 @@ func (c *defaultConfig) rebind() error {
 	return nil
 }
 
-// AmigaConfig is the struct that maps all Amiga Fwk properties (TODO extract from here to Amiga core instance?)
-type AmigaConfStruct struct {
+// AmigaFwkConfig is the struct that maps all Amiga Fwk properties (TODO extract from here to Amiga core instance?)
+type AmigaFwkConfig struct {
 	Amiga struct {
 		Common struct {
 			Cache struct {
@@ -245,7 +245,7 @@ type AmigaConfStruct struct {
 	} `yaml:"amiga"`
 }
 
-// Implementation of ConfStruct interface for AmigaConfStruct
-func (ac *AmigaConfStruct) Prefix() string {
+// Implementation of AmigaConfig interface for AmigaFwkConfig
+func (ac *AmigaFwkConfig) Prefix() string {
 	return ""
 }
