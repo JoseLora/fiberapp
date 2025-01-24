@@ -46,7 +46,7 @@ type AmigaConfig interface {
 type defaultConfig struct {
 	koanf             *koanf.Koanf
 	eventBus          EventBus.Bus
-	boundStructs      []*AmigaConfig
+	boundStructs      []AmigaConfig
 	watcherRegistered bool
 }
 
@@ -202,7 +202,7 @@ func (c *defaultConfig) Bind(conf AmigaConfig) error {
 	if err := unMarshal(conf, c.koanf); err != nil {
 		return fmt.Errorf("error binding struct: %w", err)
 	}
-	c.boundStructs = append(c.boundStructs, &conf)
+	c.boundStructs = append(c.boundStructs, conf)
 	return nil
 }
 
@@ -220,7 +220,7 @@ func (c *defaultConfig) rebind() error {
 	if totalBoundStructs > 0 {
 		log.Printf("Rebinding %d configuration structs", totalBoundStructs)
 		for i := 0; i < totalBoundStructs; i++ {
-			if err := unMarshal(*c.boundStructs[i], c.koanf); err != nil {
+			if err := unMarshal(c.boundStructs[i], c.koanf); err != nil {
 				return fmt.Errorf("error rebinding struct: %w", err)
 			}
 		}

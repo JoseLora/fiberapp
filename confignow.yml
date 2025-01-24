@@ -8,7 +8,7 @@ amiga:
         cache-names:
           - cache3
           - cache4
-          - cache6
+          - cache5
         per-cache-conf:
           cache1:
             timeout: 1111
