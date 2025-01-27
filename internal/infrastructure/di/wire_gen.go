@@ -20,11 +20,11 @@ import (
 func InitializeApp() (*http.Server, error) {
 	product := repository.NewProductInMemory()
 	bus := eventbus.NewEventBus()
-	config, err := amiga.NewConfig(bus)
+	configConfig, err := config.NewConfig(bus)
 	if err != nil {
 		return nil, err
 	}
-	productFinderAll := usecase.NewProductFinderAll(product, config, bus)
+	productFinderAll := usecase.NewProductFinderAll(product, configConfig, bus)
 	productFinderByID := usecase.NewProductFinderByID(product)
 	productHandler := handler.NewProductAPI(productFinderAll, productFinderByID)
 	server := http.NewServer(productHandler)

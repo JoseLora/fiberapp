@@ -1,4 +1,4 @@
-package amiga
+package config
 
 import (
 	"fmt"
@@ -31,22 +31,25 @@ type Config interface {
 	Float64s(key string) ([]float64, error)
 
 	// Binds a struct to be automatically filled with configuration values and internally registered to be hot-reloaded on config-now file refresh
-	Bind(c AmigaConfig) error
+	Bind(c Binding) error
 
 	// Return an AmigaConfig with all the Amiga Fwk properties already bound to be hot-reloaded
 	AmigaFwkConfig() *AmigaFwkConfig
 }
 
-// All structs that want to be automatically filled with configuration values must implement this interface
-type AmigaConfig interface {
-	Prefix() string
+// Binding is a struct that contains the configuration to be bound and the prefix to be used in the configuration file.
+type Binding struct {
+	// Cfg is the configuration struct to be bound.
+	Cfg any
+	// Prefix is the prefix to be used in the configuration file.
+	Prefix string
 }
 
 // Internal implementation of Config interface using Koanf library
 type defaultConfig struct {
 	koanf             *koanf.Koanf
 	eventBus          EventBus.Bus
-	boundStructs      []AmigaConfig
+	bindings          []Binding
 	watcherRegistered bool
 }
 
@@ -65,7 +68,7 @@ func NewConfig(eventBus EventBus.Bus) (Config, error) {
 		return nil, fmt.Errorf("error loading config: %w", err)
 	}
 
-	c.Bind(amigaFwkConfig)
+	c.Bind(Binding{Cfg: amigaFwkConfig})
 
 	return c, nil
 }
@@ -198,16 +201,16 @@ func (c *defaultConfig) Float64s(key string) ([]float64, error) {
 	return c.koanf.Float64s(key), nil
 }
 
-func (c *defaultConfig) Bind(conf AmigaConfig) error {
+func (c *defaultConfig) Bind(conf Binding) error {
 	if err := unMarshal(conf, c.koanf); err != nil {
 		return fmt.Errorf("error binding struct: %w", err)
 	}
-	c.boundStructs = append(c.boundStructs, conf)
+	c.bindings = append(c.bindings, conf)
 	return nil
 }
 
-func unMarshal(conf AmigaConfig, k *koanf.Koanf) error {
-	return k.UnmarshalWithConf(conf.Prefix(), conf, koanf.UnmarshalConf{Tag: "yaml"})
+func unMarshal(conf Binding, k *koanf.Koanf) error {
+	return k.UnmarshalWithConf(conf.Prefix, conf.Cfg, koanf.UnmarshalConf{Tag: "yaml"})
 }
 
 func (c *defaultConfig) AmigaFwkConfig() *AmigaFwkConfig {
@@ -216,11 +219,11 @@ func (c *defaultConfig) AmigaFwkConfig() *AmigaFwkConfig {
 
 // Rebind all structs that have been bound to the configuration
 func (c *defaultConfig) rebind() error {
-	totalBoundStructs := len(c.boundStructs)
-	if totalBoundStructs > 0 {
-		log.Printf("Rebinding %d configuration structs", totalBoundStructs)
-		for i := 0; i < totalBoundStructs; i++ {
-			if err := unMarshal(c.boundStructs[i], c.koanf); err != nil {
+	totalBindings := len(c.bindings)
+	if totalBindings > 0 {
+		log.Printf("Rebinding %d configurations", totalBindings)
+		for i := 0; i < totalBindings; i++ {
+			if err := unMarshal(c.bindings[i], c.koanf); err != nil {
 				return fmt.Errorf("error rebinding struct: %w", err)
 			}
 		}
@@ -243,9 +246,4 @@ type AmigaFwkConfig struct {
 			} `yaml:"cache"`
 		} `yaml:"common"`
 	} `yaml:"amiga"`
-}
-
-// Implementation of AmigaConfig interface for AmigaFwkConfig
-func (ac *AmigaFwkConfig) Prefix() string {
-	return ""
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	amiga "github.com/JoseLora/fiberapp/internal/amiga/config"
+	"github.com/JoseLora/fiberapp/internal/amiga/config"
 	"github.com/JoseLora/fiberapp/internal/domain/entity"
 	"github.com/JoseLora/fiberapp/internal/domain/repository"
 	"github.com/JoseLora/fiberapp/internal/domain/usecase"
@@ -19,23 +19,19 @@ type RedisConf struct {
 	CacheNames []string `yaml:"cache-names"`
 }
 
-func (r *RedisConf) Prefix() string {
-	return "amiga.common.cache.redis"
-}
-
 // ProductFinderAll is an implementation of the ProductFinderAll use case.
 // It uses a repository to find all products.
 type ProductFinderAll struct {
 	repository  repository.Product
-	amigaConfig amiga.Config
+	amigaConfig config.Config
 	redisConfig *RedisConf
 }
 
 // NewProductFinderAll creates a new instance of ProductFinderAllImpl.
 // It takes a repository as a parameter and returns a ProductFinderAll use case.
-func NewProductFinderAll(repository repository.Product, amigaConfig amiga.Config, eventBus EventBus.Bus) usecase.ProductFinderAll {
+func NewProductFinderAll(repository repository.Product, amigaConfig config.Config, eventBus EventBus.Bus) usecase.ProductFinderAll {
 	redisConf := &RedisConf{}
-	amigaConfig.Bind(redisConf)
+	amigaConfig.Bind(config.Binding{Cfg: redisConf, Prefix: "amiga.common.cache.redis"})
 
 	eventBus.Subscribe("confignow.refresh", func(description string) {
 		log.Printf("Received event: confignow.refresh %s", description)
